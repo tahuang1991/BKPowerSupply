@@ -212,7 +212,7 @@ if __name__ == "__main__":
     print(f"Measured current: {psu.measure_current()} A")
     print(f"Measured power: {psu.measure_power()} W")
 
-    #psu.turnoff_output()
-    #out_status = psu.get_output_state()
-    #print("output status before closing: ", "ON" if out_status else "OFF")
-    #psu.close()
+    psu.turnoff_output()
+    out_status = psu.get_output_state()
+    print("output status before closing: ", "ON" if out_status else "OFF")
+    psu.close()
