@@ -16,7 +16,7 @@ def fix_BKResponse_list(lst):
             if after == 6:
                 # Remove the element immediately after 49
                 removed = lst.pop(i + 1)
-                #print(f"Removed element {removed} after index {i} (value 49)")
+                #print(f"Removed element {removed} after index {i} (value 49): {lst}")
                 # Only done it once
                 break
         i += 1
@@ -25,8 +25,9 @@ def fix_BKResponse_list(lst):
 def parse_value(response: bytes) -> Optional[str]:
     """Extracts the first numeric value (float) from a serial response."""
     try:
-        if 49 in list(response):
-            #print(f"The response {list(response)}")
+        if bytes([65]) in response and bytes([46,49]) in response:#[65] = A; [46,49] = .1
+            """bug response for current when it is btween 1.0 to 2.0: check [65] and [46,49] in response"""
+            print(f"The bug response {list(response)}")
             res_list = fix_BKResponse_list(list(response))
             response =  bytes(res_list)
         #print(f"parse_value: response={response}", list(response))
@@ -70,7 +71,7 @@ class BK1697B:
     # ----------------------------------------------------------------------
     # Internal helper
     # ----------------------------------------------------------------------
-    def _query(self, cmd: str, delay: float = 0.5) -> Optional[str]:
+    def _query(self, cmd: str, delay: float = 0.1) -> Optional[str]:
         """Send SCPI query and return decoded response."""
         if not self.ser or not self.ser.is_open:
             raise RuntimeError("Serial port is not open.")
@@ -85,7 +86,7 @@ class BK1697B:
             print("Warning: unreadable response:", response)
             return None
 
-    def _fquery(self, cmd: str, delay: float = 0.5) -> Optional[float]:
+    def _fquery(self, cmd: str, delay: float = 0.1) -> Optional[float]:
         """Send SCPI query and return decoded response as float."""
         if not self.ser or not self.ser.is_open:
             raise RuntimeError("Serial port is not open.")
@@ -211,6 +212,11 @@ if __name__ == "__main__":
     print(f"Measured voltage: {psu.measure_voltage()} V")
     print(f"Measured current: {psu.measure_current()} A")
     print(f"Measured power: {psu.measure_power()} W")
+    vol = psu.measure_voltage();
+    curr = psu.measure_current()
+    power = psu.measure_power()
+    if abs(vol*curr - power) > 0.1*power:
+        print(f"\033[93mWarning: Power measurement discrepancy detected: {vol*curr} vs {power}!\033[0m")
 
     psu.turnoff_output()
     out_status = psu.get_output_state()
