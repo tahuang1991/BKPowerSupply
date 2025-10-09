@@ -25,12 +25,13 @@ def fix_BKResponse_list(lst):
 def parse_value(response: bytes) -> Optional[str]:
     """Extracts the first numeric value (float) from a serial response."""
     try:
-        if bytes([65]) in response and bytes([46,49]) in response:#[65] = A; [46,49] = .1
-            """bug response for current when it is btween 1.0 to 2.0: check [65] and [46,49] in response"""
-            print(f"The bug response {list(response)}")
+        if bytes([65]) in response and bytes([46]) in response:#[65] = A; [46] = .
+            """bug response for current when it is 1.1 / 2.2 .. : check [65] and [46] in response"""
+            #print(f"The bug response {list(response)}")
             res_list = fix_BKResponse_list(list(response))
+            #print(f"The fixed response {res_list}")
             response =  bytes(res_list)
-        #print(f"parse_value: response={response}", list(response))
+        #print(f"parse_value: response={response} ", list(response))
         text = response.decode().strip()  # e.g. '5.00V' or '1.23A'
         #print("parse_value ", text)
         match = re.search(r"[-+]?\d*\.?\d+", text)
@@ -215,7 +216,7 @@ if __name__ == "__main__":
     vol = psu.measure_voltage();
     curr = psu.measure_current()
     power = psu.measure_power()
-    if abs(vol*curr - power) > 0.1*power:
+    if abs(vol*curr - power) > 0.05*power:
         print(f"\033[93mWarning: Power measurement discrepancy detected: {vol*curr} vs {power}!\033[0m")
 
     psu.turnoff_output()
